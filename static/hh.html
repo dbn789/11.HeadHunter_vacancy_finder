@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="hh.css" />
+        <title>HH.RU</title>
+    </head>
+    <body>
+        <script>
+            const body = document.querySelector('body');
+            const container = document.createElement('div');
+            container.setAttribute('class', 'container');
+            body.prepend(container);
+            for (let i = 1; i <= 20; i++) {
+                const job = document.createElement('div');
+                job.setAttribute('class', 'job');
+                job.setAttribute('id', `job${i}`);
+                job.innerText = 'WAIT...';
+                container.append(job);
+            }
+            const pageCount = document.createElement('div');
+            pageCount.setAttribute('id', 'page-count');
+            const prevPage = document.createElement('div');
+            prevPage.setAttribute('id', 'prev-page');
+            prevPage.innerHTML = '&lt';
+            const nextPage = document.createElement('div');
+            nextPage.setAttribute('id', 'next-page');
+            nextPage.innerHTML = '&gt';
+            body.append(pageCount, prevPage, nextPage);
+        </script>
+        <script src="hh.js"></script>
+    </body>
+</html>
