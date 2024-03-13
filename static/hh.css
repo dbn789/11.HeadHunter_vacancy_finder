@@ -13,6 +13,7 @@
 .job {
     height: 25vh;
     border: 1px solid gray;
+    text-align: center;
 }
 
 #prev-page,
