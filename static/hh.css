@@ -8,7 +8,7 @@
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     height: 100vh;
-    width: 95vw;
+    width: 90vw;
 }
 .job {
     height: 25vh;
@@ -26,10 +26,10 @@
     color: black;
 }
 #prev-page {
-    left: 0.5vw;
+    left: 1vw;
 }
 #next-page {
-    right: 0.5vw;
+    right: 1vw;
 }
 #prev-page:hover,
 #next-page:hover {
@@ -39,15 +39,16 @@
 }
 
 #prev-page:hover {
-    left: 0.3vw;
+    left: 0.8vw;
 }
 #next-page:hover {
-    right: 0.3vw;
+    right: 0.8vw;
 }
 #page-count {
     position: absolute;
-    right: 2vw;
+    right: 1vw;
     top: 1vh;
-    font-size: 20px;
+    font-weight: 700;
+    font-size: 25px;
     color: black;
 }

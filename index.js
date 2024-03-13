@@ -9,9 +9,12 @@ const emitter = new events.EventEmitter();
 
 const options = require('./src/options');
 const PORT = 5000;
-let flag = true,
-    counter;
-const jsVacancyArray = [];
+let flag = true;
+const counter = {
+    current: 0,
+    page: 1,
+};
+const allVacancyArray = [];
 
 app.use(express.static('static'));
 app.use(cors());
@@ -49,28 +52,27 @@ const parseVacancy = async (vacancyId) => {
     const reg = /"keySkill":.?[^}]+/;
     const regTitle =
         /name="description" content="Вакансия(?<title>.+?(занятость.))/;
+    let goodVacancy = false;
     try {
         const data = await getData(url, options);
         const skillsArray = data.match(reg)[0].replace('"keySkill":', '');
 
         const title = data.match(regTitle).groups.title;
-        console.log(title);
-        console.log(skillsArray);
+        //console.log(title);
+        //console.log(skillsArray);
 
         if (
             skillsArray.includes('JavaScript') ||
             skillsArray.includes('Node.js')
         )
-            return [true, vacancyId, title, skillsArray];
-        else return [false, vacancyId, title, skillsArray];
-        // else throw Error;
+            goodVacancy = true;
+        return [goodVacancy, vacancyId, title, skillsArray];
     } catch (e) {
-        //console.log('Error');
+        return undefined;
     }
 };
 
 const findJsVacancy = async (page) => {
-    //const promiseArray = [];
     try {
         const array = (await getListVacancies(page)) || [];
         console.log(array);
@@ -78,7 +80,6 @@ const findJsVacancy = async (page) => {
         for (let id of array) {
             const vacancyInfo = await parseVacancy(id);
             if (vacancyInfo) {
-                //console.log('NEW-VACANCY', skillsArray, 'COUNTER', counter);
                 emitter.emit('new-vacancy', vacancyInfo);
             }
         }
@@ -97,19 +98,35 @@ const run = () => {
 
 app.get('/', (req, res) => {
     if (flag) {
-        counter = 0;
         res.sendFile(__dirname + '/static/hh.html');
         console.log('HTML file loaded!');
         flag = false;
         run();
     } else {
         emitter.once('new-vacancy', (newVacancy) => {
-            if (newVacancy[0]) jsVacancyArray.push(newVacancy);
+            allVacancyArray.push(newVacancy);
+            newVacancy = allVacancyArray[counter.current];
+            counter.current++;
             res.status(200);
-            res.json([newVacancy, counter, jsVacancyArray.length]);
-            counter++;
+            res.json([newVacancy, counter, allVacancyArray.length]);
         });
     }
+});
+
+app.get('/next', (req, res) => {
+    newVacancy = allVacancyArray[counter.page * 20];
+    counter.current = counter.page * 20 + 1;
+    counter.page++;
+    res.status(200);
+    res.json([newVacancy, counter, allVacancyArray.length]);
+});
+
+app.get('/prev', (req, res) => {
+    counter.page--;
+    newVacancy = allVacancyArray[counter.page * 20];
+    counter.current = counter.page * 20 + 1;
+    res.status(200);
+    res.json([newVacancy, counter, allVacancyArray.length]);
 });
 
 http.listen(PORT, () => console.log(`Server run to ${PORT} port!`));
