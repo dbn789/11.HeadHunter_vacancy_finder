@@ -16,7 +16,13 @@
                 const job = document.createElement('div');
                 job.setAttribute('class', 'job');
                 job.setAttribute('id', `job${i}`);
-                job.innerText = 'WAIT...';
+                const jobHeader = document.createElement('div');
+                jobHeader.setAttribute('class', 'job__header');
+                const jobPrice = document.createElement('div');
+                jobPrice.setAttribute('class', 'job__price');
+                const jobTail = document.createElement('div');
+                jobTail.setAttribute('class', 'job__tail');
+                job.append(jobHeader, jobPrice, jobTail);
                 container.append(job);
             }
             const pageCount = document.createElement('div');

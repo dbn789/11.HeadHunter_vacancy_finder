@@ -14,8 +14,12 @@ async function handler(flag) {
         if (counter.page !== prevPage) {
             for (let i = 1; i <= 20; i++) {
                 const vacancyElement = document.getElementById(`job${i}`);
-                vacancyElement.innerHTML = 'WAIT...';
-                vacancyElement.style.backgroundColor = 'white';
+                vacancyElement.childNodes.forEach((node) => {
+                    node.innerHTML = '';
+                });
+                vacancyElement.classList.remove('job-found');
+                delete vacancyElement.dataset.vacancyId;
+                delete vacancyElement.dataset.skills;
             }
             prevPage = counter.page;
         }
@@ -29,6 +33,7 @@ async function handler(flag) {
         if (prevPage === counter.page && elementID <= 20) {
             const vacancyElement = document.getElementById(`job${elementID}`);
             vacancyElement.dataset.vacancyId = vacancy[1];
+            vacancyElement.dataset.skills = vacancy[3].replace(/[["\]]+/g, '');
             const vacancyTitle = vacancy[2].match(
                 /(?<title>.+?) в компании.+?Зарплата: (?<price>[^.]+)(?<tail>.+)\./
             );
@@ -36,9 +41,14 @@ async function handler(flag) {
                 '.',
                 '<br/>'
             );
-            vacancyElement.innerHTML = `<h3>${vacancyTitle.groups.title}</h3><br/><h2>${vacancyTitle.groups.price}</h2>${vacancyTail}`;
-            if (vacancy[0])
-                vacancyElement.style.backgroundColor = 'rgb(154, 248, 248)';
+            let vacancyHeader = vacancyTitle.groups.title;
+            if (vacancyHeader.length > 55)
+                vacancyHeader = vacancyHeader.slice(0, 55) + '...';
+            vacancyElement.children[0].innerText = vacancyHeader;
+            vacancyElement.children[1].innerText = vacancyTitle.groups.price;
+            vacancyElement.children[2].innerHTML = vacancyTail;
+
+            if (vacancy[0]) vacancyElement.classList.add('job-found');
         }
 
         if (flag === '') await handler(flag);
@@ -56,4 +66,24 @@ container.addEventListener('click', (event) => {
         `https://krasnoyarsk.hh.ru/vacancy/${target.dataset.vacancyId}`,
         '_blank'
     );
+});
+
+container.addEventListener('mouseover', (event) => {
+    let target = event.target;
+    if (!target.id) target = target.parentElement;
+
+    if (target.dataset.skills) {
+        const skills = target.dataset.skills.split(',');
+        const skillsBlock = document.createElement('table');
+        for (let i = 0; i < skills.length; i++) {
+            skillsBlock.innerHTML += `<tr><th>${skills[i]}</th></tr>`;
+        }
+        skillsBlock.setAttribute('border', '');
+        console.log(skillsBlock);
+        target.append(skillsBlock);
+    }
+    target.addEventListener('mouseleave', () => {
+        if (target.lastElementChild.nodeName === 'TABLE')
+            target.lastElementChild.remove();
+    });
 });

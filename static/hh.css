@@ -1,21 +1,83 @@
+@import url(https://fonts.googleapis.com/css2?family=Rubik:ital,wght@300,400,500,600);
+
 * {
-    padding: 0;
-    margin: 0;
     box-sizing: border-box;
 }
+
+:root {
+    /*  color */
+
+    --black: #140f07;
+    --blue: #102f51;
+    --blue-light: #0971b4;
+    --beide: hsl(49, 16%, 87%);
+    /*  font */
+    --family: 'Rubik', sans-serif;
+    --fs-base: 16px;
+    --fs-header: 20px;
+    --fs-price: 22px;
+    --weight-normal: 400;
+    --weight-bold: 600;
+    /*  border-radius */
+    --radius: 0.75rem;
+}
+body {
+    margin: 0;
+    background-color: var(--black);
+}
+
 .container {
     margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 1vh;
     height: 100vh;
     width: 90vw;
 }
 .job {
-    height: 25vh;
-    border: 1px solid gray;
+    position: relative;
+    font-family: var(--family);
+    background-color: var(--blue);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
     text-align: center;
+    color: var(--beide);
 }
-
+.job:hover {
+    border: 0.1rem solid #0971b4;
+    cursor: pointer;
+}
+.job-found {
+    border: 0.1rem solid #0efff9;
+}
+.job-found:hover {
+    border: 0.3rem solid #0efff9;
+}
+.job__header {
+    height: 35%;
+    font-weight: var(--weight-bold);
+    font-size: var(--fs-header);
+}
+.job__price {
+    padding-top: 0.5rem;
+    font-size: var(--fs-price);
+}
+.job__tail {
+    height: 40%;
+    padding-bottom: 0.4rem;
+    font-size: var(--fs-base);
+}
+.job > table {
+    position: absolute;
+    background-color: #102f51;
+    left: 50%;
+    top: 0;
+    z-index: 1;
+    color: coral;
+}
 #prev-page,
 #next-page {
     position: fixed;
@@ -23,7 +85,7 @@
     color: white;
     font-size: 50px;
     font-weight: 700;
-    color: black;
+    color: white;
 }
 #prev-page {
     left: 1vw;
@@ -50,5 +112,5 @@
     top: 1vh;
     font-weight: 700;
     font-size: 25px;
-    color: black;
+    color: white;
 }
