@@ -1,5 +1,4 @@
-//const vacancyField = document.querySelectorAll('.job');
-
+const vacancyField = document.querySelectorAll('.job');
 document.addEventListener('load', handler(''));
 nextPage.addEventListener('click', () => handler('next'));
 prevPage.addEventListener('click', () => handler('prev'));
@@ -7,34 +6,40 @@ prevPage.addEventListener('click', () => handler('prev'));
 async function handler(flag) {
     try {
         const response = await fetch(`http://localhost:5000/${flag}`);
-        const [vacancy, counter, allVacancies] = await response.json();
-
-        let prevPage = +pageCount.innerText?.match(/^\d+/) || 1;
+        const [counter, allVacancies] = await response.json();
+        console.log(counter);
+        let prevPage = +pageCount.innerText?.match(/^\d+/) || 0;
 
         if (counter.page !== prevPage) {
-            for (let i = 1; i <= 20; i++) {
-                const vacancyElement = document.getElementById(`job${i}`);
-                vacancyElement.childNodes.forEach((node) => {
-                    node.innerHTML = '';
+            vacancyField.forEach((node) => {
+                const children = Array.from(node.children);
+                children.forEach((child) => {
+                    child.innerHTML = '';
                 });
-                vacancyElement.classList.remove('job-found');
-                delete vacancyElement.dataset.vacancyId;
-                delete vacancyElement.dataset.skills;
+            });
+            for (let i = 0; i < 20; i++) {
+                vacancyField[i].classList.remove('job-found');
+                delete vacancyField[i].dataset.vacancyId;
+                delete vacancyField[i].dataset.skills;
             }
             prevPage = counter.page;
         }
 
-        console.log(counter);
-        const allPages = Math.ceil(allVacancies / 20);
+        const allPages = Math.ceil(allVacancies.length / 20);
         pageCount.innerText = `${counter.page} / ${allPages}`;
 
-        const elementID = counter.current - (counter.page - 1) * 20;
-        //console.log(elementID);
-        if (prevPage === counter.page && elementID <= 20) {
-            const vacancyElement = document.getElementById(`job${elementID}`);
-            vacancyElement.dataset.vacancyId = vacancy[1];
-            vacancyElement.dataset.skills = vacancy[3].replace(/[["\]]+/g, '');
-            const vacancyTitle = vacancy[2].match(
+        const offset =
+            allVacancies.length - counter.current >= 20
+                ? counter.page * 20
+                : (counter.page - 1) * 20 + (allVacancies.length % 20);
+
+        for (let i = counter.current; i <= offset; i++) {
+            const elementID = i - (counter.page - 1) * 20 - 1;
+            vacancyField[elementID].dataset.vacancyId = allVacancies[i - 1][1];
+            vacancyField[elementID].dataset.skills = allVacancies[
+                i - 1
+            ][3].replace(/[["\]]+/g, '');
+            const vacancyTitle = allVacancies[i - 1][2].match(
                 /(?<title>.+?) в компании.+?Зарплата: (?<price>[^.]+)(?<tail>.+)\./
             );
             const vacancyTail = vacancyTitle.groups.tail.replaceAll(
@@ -43,18 +48,21 @@ async function handler(flag) {
             );
             let vacancyHeader = vacancyTitle.groups.title;
             if (vacancyHeader.length > 55)
-                vacancyHeader = vacancyHeader.slice(0, 55) + '...';
-            vacancyElement.children[0].innerText = vacancyHeader;
-            vacancyElement.children[1].innerText = vacancyTitle.groups.price;
-            vacancyElement.children[2].innerHTML = vacancyTail;
+                vacancyHeader = vacancyHeader.slice(0, 50) + '...';
 
-            if (vacancy[0]) vacancyElement.classList.add('job-found');
+            vacancyField[elementID].children[0].innerText = vacancyHeader;
+            vacancyField[elementID].children[1].innerText =
+                vacancyTitle.groups.price;
+            vacancyField[elementID].children[2].innerHTML = vacancyTail;
+
+            if (allVacancies[i - 1][0])
+                vacancyField[elementID].classList.add('job-found');
         }
 
         if (flag === '') await handler(flag);
     } catch (e) {
-        console.log(e);
-        await handler(flag);
+        // console.log(e);
+        await handler('');
     }
 }
 
@@ -79,7 +87,7 @@ container.addEventListener('mouseover', (event) => {
             skillsBlock.innerHTML += `<tr><th>${skills[i]}</th></tr>`;
         }
         skillsBlock.setAttribute('border', '');
-        console.log(skillsBlock);
+        //console.log(skillsBlock);
         target.append(skillsBlock);
     }
     target.addEventListener('mouseleave', () => {

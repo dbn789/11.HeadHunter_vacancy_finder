@@ -105,28 +105,32 @@ app.get('/', (req, res) => {
     } else {
         emitter.once('new-vacancy', (newVacancy) => {
             allVacancyArray.push(newVacancy);
-            newVacancy = allVacancyArray[counter.current];
+            //newVacancy = allVacancyArray[counter.current];
             counter.current++;
             res.status(200);
-            res.json([newVacancy, counter, allVacancyArray.length]);
+            res.json([counter, allVacancyArray]);
         });
     }
 });
 
 app.get('/next', (req, res) => {
-    newVacancy = allVacancyArray[counter.page * 20];
-    counter.current = counter.page * 20 + 1;
-    counter.page++;
+    console.log(counter);
+    if (allVacancyArray.length > 20 * counter.page) {
+        counter.current = counter.page * 20 + 1;
+        counter.page++;
+    }
     res.status(200);
-    res.json([newVacancy, counter, allVacancyArray.length]);
+    res.json([counter, allVacancyArray]);
 });
 
 app.get('/prev', (req, res) => {
-    counter.page--;
-    newVacancy = allVacancyArray[counter.page * 20];
-    counter.current = counter.page * 20 + 1;
+    if (counter.current > 20) {
+        counter.page--;
+        counter.current = (counter.page - 1) * 20 + 1;
+    }
+
     res.status(200);
-    res.json([newVacancy, counter, allVacancyArray.length]);
+    res.json([counter, allVacancyArray]);
 });
 
 http.listen(PORT, () => console.log(`Server run to ${PORT} port!`));
