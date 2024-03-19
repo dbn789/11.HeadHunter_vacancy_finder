@@ -27,12 +27,12 @@ body {
 }
 
 .container {
-    margin: 0 auto;
+    margin: auto;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     grid-template-rows: repeat(4, 1fr);
     gap: 1vh;
-    height: 100vh;
+    height: 95vh;
     width: 90vw;
 }
 .job {

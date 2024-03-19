@@ -1,75 +1,13 @@
 const vacancyField = document.querySelectorAll('.job');
+
 document.addEventListener('load', handler(''));
 nextPage.addEventListener('click', () => handler('next'));
 prevPage.addEventListener('click', () => handler('prev'));
 
-async function handler(flag) {
-    try {
-        const response = await fetch(`http://localhost:5000/${flag}`);
-        const [counter, allVacancies] = await response.json();
-        console.log(counter);
-        let prevPage = +pageCount.innerText?.match(/^\d+/) || 0;
-
-        if (counter.page !== prevPage) {
-            vacancyField.forEach((node) => {
-                const children = Array.from(node.children);
-                children.forEach((child) => {
-                    child.innerHTML = '';
-                });
-            });
-            for (let i = 0; i < 20; i++) {
-                vacancyField[i].classList.remove('job-found');
-                delete vacancyField[i].dataset.vacancyId;
-                delete vacancyField[i].dataset.skills;
-            }
-            prevPage = counter.page;
-        }
-
-        const allPages = Math.ceil(allVacancies.length / 20);
-        pageCount.innerText = `${counter.page} / ${allPages}`;
-
-        const offset =
-            allVacancies.length - counter.current >= 20
-                ? counter.page * 20
-                : (counter.page - 1) * 20 + (allVacancies.length % 20);
-
-        for (let i = counter.current; i <= offset; i++) {
-            const elementID = i - (counter.page - 1) * 20 - 1;
-            vacancyField[elementID].dataset.vacancyId = allVacancies[i - 1][1];
-            vacancyField[elementID].dataset.skills = allVacancies[
-                i - 1
-            ][3].replace(/[["\]]+/g, '');
-            const vacancyTitle = allVacancies[i - 1][2].match(
-                /(?<title>.+?) в компании.+?Зарплата: (?<price>[^.]+)(?<tail>.+)\./
-            );
-            const vacancyTail = vacancyTitle.groups.tail.replaceAll(
-                '.',
-                '<br/>'
-            );
-            let vacancyHeader = vacancyTitle.groups.title;
-            if (vacancyHeader.length > 55)
-                vacancyHeader = vacancyHeader.slice(0, 50) + '...';
-
-            vacancyField[elementID].children[0].innerText = vacancyHeader;
-            vacancyField[elementID].children[1].innerText =
-                vacancyTitle.groups.price;
-            vacancyField[elementID].children[2].innerHTML = vacancyTail;
-
-            if (allVacancies[i - 1][0])
-                vacancyField[elementID].classList.add('job-found');
-        }
-
-        if (flag === '') await handler(flag);
-    } catch (e) {
-        // console.log(e);
-        await handler('');
-    }
-}
-
 container.addEventListener('click', (event) => {
     let target = event.target;
     if (!target.id) target = target.parentElement;
-    //console.log(target.dataset.vacancyId);
+
     window.open(
         `https://krasnoyarsk.hh.ru/vacancy/${target.dataset.vacancyId}`,
         '_blank'
@@ -87,7 +25,6 @@ container.addEventListener('mouseover', (event) => {
             skillsBlock.innerHTML += `<tr><th>${skills[i]}</th></tr>`;
         }
         skillsBlock.setAttribute('border', '');
-        //console.log(skillsBlock);
         target.append(skillsBlock);
     }
     target.addEventListener('mouseleave', () => {
@@ -95,3 +32,73 @@ container.addEventListener('mouseover', (event) => {
             target.lastElementChild.remove();
     });
 });
+
+async function handler(flag) {
+    try {
+        const response = await fetch(`http://localhost:5000/${flag}`);
+        const [counter, allVacancies] = await response.json();
+
+        let prevPage = +pageCount.innerText?.match(/^\d+/) || 0;
+
+        if (counter.page !== prevPage) {
+            clearNodes();
+            prevPage = counter.page;
+        }
+
+        const allPages = Math.ceil(allVacancies.length / 20);
+        pageCount.innerText = `${counter.page} / ${allPages}`;
+
+        const start = (counter.page - 1) * 20;
+        const end =
+            allVacancies.length > counter.page * 20
+                ? counter.page * 20
+                : (counter.page - 1) * 20 + (allVacancies.length % 20);
+
+        for (let i = start; i < end; i++) {
+            const elementId = i - (counter.page - 1) * 20;
+            const vacancyTitle = vacancyField[elementId].children[0].innerText;
+
+            if (!vacancyTitle) {
+                pushVacancyData(elementId, i, allVacancies);
+            }
+        }
+
+        if (flag === '') await handler(flag);
+    } catch (e) {
+        // console.log(e);
+        await handler('');
+    }
+}
+
+function clearNodes() {
+    vacancyField.forEach((node) => {
+        node.classList.remove('job-found');
+        delete node.dataset.vacancyId;
+        delete node.dataset.skills;
+        const children = Array.from(node.children);
+        children.forEach((child) => {
+            child.innerHTML = '';
+        });
+    });
+}
+
+function pushVacancyData(elementId, current, array) {
+    vacancyField[elementId].dataset.vacancyId = array[current][1];
+    vacancyField[elementId].dataset.skills = array[current][3].replace(
+        /[["\]]+/g,
+        ''
+    );
+    const vacancyTitle = array[current][2].match(
+        /(?<title>.+?) в компании.+?Зарплата: (?<price>[^.]+)(?<tail>.+)\./
+    );
+    const vacancyTail = vacancyTitle.groups.tail.replaceAll('.', '<br/>');
+    let vacancyHeader = vacancyTitle.groups.title;
+    if (vacancyHeader.length > 50)
+        vacancyHeader = vacancyHeader.slice(0, 50) + '...';
+
+    vacancyField[elementId].children[0].innerText = vacancyHeader;
+    vacancyField[elementId].children[1].innerText = vacancyTitle.groups.price;
+    vacancyField[elementId].children[2].innerHTML = vacancyTail;
+
+    if (array[current][0]) vacancyField[elementId].classList.add('job-found');
+}

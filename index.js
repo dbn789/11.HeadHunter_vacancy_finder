@@ -11,7 +11,6 @@ const options = require('./src/options');
 const PORT = 5000;
 let flag = true;
 const counter = {
-    current: 0,
     page: 1,
 };
 const allVacancyArray = [];
@@ -58,8 +57,6 @@ const parseVacancy = async (vacancyId) => {
         const skillsArray = data.match(reg)[0].replace('"keySkill":', '');
 
         const title = data.match(regTitle).groups.title;
-        //console.log(title);
-        //console.log(skillsArray);
 
         if (
             skillsArray.includes('JavaScript') ||
@@ -105,8 +102,6 @@ app.get('/', (req, res) => {
     } else {
         emitter.once('new-vacancy', (newVacancy) => {
             allVacancyArray.push(newVacancy);
-            //newVacancy = allVacancyArray[counter.current];
-            counter.current++;
             res.status(200);
             res.json([counter, allVacancyArray]);
         });
@@ -114,9 +109,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/next', (req, res) => {
-    console.log(counter);
     if (allVacancyArray.length > 20 * counter.page) {
-        counter.current = counter.page * 20 + 1;
         counter.page++;
     }
     res.status(200);
@@ -124,11 +117,9 @@ app.get('/next', (req, res) => {
 });
 
 app.get('/prev', (req, res) => {
-    if (counter.current > 20) {
+    if (counter.page > 1) {
         counter.page--;
-        counter.current = (counter.page - 1) * 20 + 1;
     }
-
     res.status(200);
     res.json([counter, allVacancyArray]);
 });
