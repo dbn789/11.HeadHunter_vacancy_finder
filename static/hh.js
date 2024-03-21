@@ -84,10 +84,13 @@ function clearNodes() {
 
 function pushVacancyData(elementId, current, array) {
     vacancyField[elementId].dataset.vacancyId = array[current][1];
-    vacancyField[elementId].dataset.skills = array[current][3].replace(
-        /[["\]]+/g,
-        ''
-    );
+    if (array[current][3].length) {
+        vacancyField[elementId].dataset.skills = array[current][3].replace(
+            /[["\]]+/g,
+            ''
+        );
+    }
+
     const vacancyTitle = array[current][2].match(
         /(?<title>.+?) в компании.+?Зарплата: (?<price>[^.]+)(?<tail>.+)\./
     );

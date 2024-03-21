@@ -8,6 +8,7 @@ const events = require('events');
 const emitter = new events.EventEmitter();
 
 const options = require('./src/options');
+
 const PORT = 5000;
 let flag = true;
 const counter = {
@@ -54,10 +55,11 @@ const parseVacancy = async (vacancyId) => {
     let goodVacancy = false;
     try {
         const data = await getData(url, options);
-        const skillsArray = data.match(reg)[0].replace('"keySkill":', '');
-
+        const skillsArray =
+            data.match(reg)?.[0].replace('"keySkill":', '') || [];
+        console.log(skillsArray);
         const title = data.match(regTitle).groups.title;
-
+        console.log(title);
         if (
             skillsArray.includes('JavaScript') ||
             skillsArray.includes('Node.js')
@@ -78,8 +80,10 @@ const findJsVacancy = async (page) => {
             const vacancyInfo = await parseVacancy(id);
             if (vacancyInfo) {
                 emitter.emit('new-vacancy', vacancyInfo);
-            }
+                console.log('NEW VACANCY');
+            } else console.log(`Vacancy ${id} not parsed`);
         }
+        emitter.emit('data-parsed');
     } catch (e) {
         console.log('Vacancy not found');
     }
@@ -87,10 +91,11 @@ const findJsVacancy = async (page) => {
 
 const run = () => {
     let page = 0;
+    emitter.on('data-parsed', () => {
+        console.log('NEXT PAGE', page);
+        findJsVacancy(++page);
+    });
     findJsVacancy(page);
-    let intervalId = setInterval(async () => {
-        await findJsVacancy(++page);
-    }, 60000);
 };
 
 app.get('/', (req, res) => {
